@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+        href="https://fonts.googleapis.com/css?family=Poppins:300,400&display=swap"
+        rel="stylesheet"
+    />
+    <script
+        src="https://kit.fontawesome.com/e7ebc2fc39.js"
+        crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="css/style.css" />
+    <title>Todo List - Fullture</title>
+</head>
+<body>
+    <header>
+        <h1>FULLTURE Todo List</h1>
+    </header>
+
+    <form id="todoForm">
+        <input type="text" class="todo-input" maxlength="40" />
+        <button class="todo-button" type="submit">
+            <i class="fas fa-plus-square"></i>
+        </button>
+        <div class="select">
+            <select name="todos" class="filter-todo">
+                <option value="all">Todas</option>
+                <option value="completed">Finalizadas</option>
+                <option value="uncompleted">Não Finalizadas</option>
+            </select>
+        </div>
+    </form>
+
+    <div class="todo-container">
+        <ul class="todo-list">
+     
+        </ul>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const todoForm = document.getElementById('todoForm');
+            const todoInput = document.querySelector('.todo-input');
+            const filterTodo = document.querySelector('.filter-todo');
+            const todoList = document.querySelector('.todo-list');
+
+            let tasks = [];
+
+            function updateLocalStorage() {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+
+            function loadFromLocalStorage() {
+                const storedTasks = localStorage.getItem('tasks');
+                tasks = storedTasks ? JSON.parse(storedTasks) : [];
+                updateDOM();
+            }
+
+            function updateDOM() {
+                todoList.innerHTML = '';
+                tasks.forEach(task => {
+                    const todoDiv = document.createElement('div');
+                    todoDiv.classList.add('todo');
+                    if (task.completed) {
+                        todoDiv.classList.add('completed');
+                    }
+
+                    const newTodo = document.createElement('li');
+                    newTodo.innerText = task.name;
+                    newTodo.classList.add('todo-item');
+                    todoDiv.appendChild(newTodo);
+
+                    const completeButton = document.createElement('button');
+                    completeButton.innerHTML = '<i class="fas fa-check"></i>';
+                    completeButton.classList.add('check-btn');
+                    completeButton.addEventListener('click', () => completeTask(task.id));
+                    todoDiv.appendChild(completeButton);
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                    deleteButton.classList.add('trash-btn');
+                    deleteButton.addEventListener('click', () => deleteTask(task.id));
+                    todoDiv.appendChild(deleteButton);
+
+                    todoList.appendChild(todoDiv);
+                });
+            }
+
+            function addTask(e) {
+                e.preventDefault();
+                const taskName = todoInput.value.trim();
+                if (taskName === '') return;
+
+                const newTask = {
+                    id: new Date().getTime(),
+                    name: taskName,
+                    completed: false,
+                };
+
+                tasks.push(newTask);
+                updateLocalStorage();
+                updateDOM();
+                todoInput.value = '';
+            }
+
+            function completeTask(taskId) {
+                const taskIndex = tasks.findIndex(task => task.id === taskId);
+                tasks[taskIndex].completed = !tasks[taskIndex].completed;
+                updateLocalStorage();
+                updateDOM();
+            }
+
+            function deleteTask(taskId) {
+                tasks = tasks.filter(task => task.id !== taskId);
+                updateLocalStorage();
+                updateDOM();
+            }
+
+            function filterTasks() {
+                const filterValue = filterTodo.value;
+                if (filterValue === 'all') {
+                    updateDOM();
+                } else {
+                    const filteredTasks = tasks.filter(task => {
+                        return filterValue === 'completed' ? task.completed : !task.completed;
+                    });
+                    todoList.innerHTML = '';
+                    filteredTasks.forEach(task => {
+                        const todoDiv = document.createElement('div');
+                        todoDiv.classList.add('todo');
+                        if (task.completed) {
+                            todoDiv.classList.add('completed');
+                        }
+
+                        const newTodo = document.createElement('li');
+                        newTodo.innerText = task.name;
+                        newTodo.classList.add('todo-item');
+                        todoDiv.appendChild(newTodo);
+
+                        const completeButton = document.createElement('button');
+                        completeButton.innerHTML = '<i class="fas fa-check"></i>';
+                        completeButton.classList.add('check-btn');
+                        completeButton.addEventListener('click', () => completeTask(task.id));
+                        todoDiv.appendChild(completeButton);
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                        deleteButton.classList.add('trash-btn');
+                        deleteButton.addEventListener('click', () => deleteTask(task.id));
+                        todoDiv.appendChild(deleteButton);
+
+                        todoList.appendChild(todoDiv);
+                    });
+                }
+            }
+
+            todoForm.addEventListener('submit', addTask);
+            filterTodo.addEventListener('change', filterTasks);
+
+        
+            loadFromLocalStorage();
+        });
+    </script>
+</body>
+</html>
